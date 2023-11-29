@@ -8,7 +8,41 @@ const repo = 'SWATEngineering.github.io'; // Sostituisci con il nome della tua r
 const branch = 'main'; // Sostituisci con il nome del branch
 const REPO_TOKEN = process.env.REPO_TOKEN;
 
+let CONTENT = '';
+
 const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`;
+
+async function repo_explorer() {
+    console.log('#server - UPDATING CONTENT');
+    try {
+        const response = await axios.get(apiUrl, {
+            headers: {
+                Authorization: `Bearer ${REPO_TOKEN}`,
+            },
+        });
+        const treeData = response.data;
+        const result = (await JSONizeTree(treeData)).filter((item) => {
+            if (
+                !(
+                    item.name == 'assets' ||
+                    item.name == 'index.html' ||
+                    item.name == 'script.js' ||
+                    item.name == 'style.css'
+                )
+            ) {
+                return true;
+            }
+            return false;
+        });
+        CONTENT = result;
+    } catch (error) {
+        console.error('Errore nella richiesta API:', error);
+    }
+    console.log('#server - CONTENT UPDATED');
+}
+
+await repo_explorer();
+setInterval(repo_explorer, 900000);
 
 async function JSONizeTree(treeData) {
     const results = [];
@@ -50,31 +84,9 @@ app.use(function (req, res, next) {
     next();
 });
 app.get('/DocumentsTree', async (req, res) => {
-    try {
-        const response = await axios.get(apiUrl, {
-            headers: {
-                Authorization: `Bearer ${REPO_TOKEN}`,
-            },
-        });
-        const treeData = response.data;
-        const result = (await JSONizeTree(treeData)).filter((item) => {
-            if (
-                !(
-                    item.name == 'assets' ||
-                    item.name == 'index.html' ||
-                    item.name == 'script.js' ||
-                    item.name == 'style.css'
-                )
-            ) {
-                return true;
-            }
-            return false;
-        });
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(result, null, 4));
-    } catch (error) {
-        console.error('Errore nella richiesta API:', error);
-    }
+    console.log('#server - REQUEST RECEIVED');
+    res.setHeader('Content-Type', 'application/json');
+    res.send(JSON.stringify(CONTENT, null, 4));
 });
 
 app.listen(port);
