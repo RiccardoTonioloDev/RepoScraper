@@ -39,7 +39,7 @@ async function JSONizeTree(treeData) {
 }
 
 const app = express();
-const port = 8080;
+const port = process.env.PORT;
 
 app.use(cors());
 app.use(function (req, res, next) {
