@@ -27,6 +27,8 @@ async function repo_explorer() {
                     item.name == 'assets' ||
                     item.name == 'index.html' ||
                     item.name == 'script.js' ||
+                    item.name == 'automate-cards.js' ||
+                    item.name == '.gitignore' ||
                     item.name == 'style.css'
                 )
             ) {
